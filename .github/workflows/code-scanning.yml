@@ -10,13 +10,12 @@ jobs:
     name: SonarQube
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: actions/checkout@v4
+
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@78ed0c7291d93e40c51b085850dc669a4c3ab73b # v3
+        uses: github/codeql-action/init@v3 # v3
       - name: CodeQL Scan
-        uses: github/codeql-action/analyze@78ed0c7291d93e40c51b085850dc669a4c3ab73b # v3
+        uses: github/codeql-action/init@v3 # v3
       # This step is required to remove malformed data from the CodeQL output
       # It may be possible to remove in future iterations
       - name: Post-Process Output
