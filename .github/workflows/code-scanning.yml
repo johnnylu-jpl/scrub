@@ -5,6 +5,15 @@ on:
       - master
   pull_request:
     types: [opened, synchronize, reopened]
+
+permissions:
+  # required for all workflows
+  security-events: write
+  # required to fetch internal or private CodeQL packs
+  packages: read
+  contents: read
+  actions: read # Required for private repositories
+
 jobs:
   sonarqube:
     name: SonarQube
