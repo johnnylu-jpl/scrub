@@ -62,27 +62,12 @@ jobs:
           name: codeql-artifacts
           path: ${{ env.RESULTS_DIR }}
 
-      # Download compiled class files for Sonar scan
-      - name: Download compiled classes
-        uses: actions/download-artifact@v5.0.0
-        with:
-          name: compiled-classes
-          path: build-output-for-sonar/
-
-      - name: Verify downloaded classes
-        run: ls -R build-output-for-sonar/
-
-      # Download SARIF files for Sonar scan
-      - name: Download SARIF Files
-        uses: actions/download-artifact@v5.0.0
-        with:
-          name: codeql-artifacts
-          path: codeql-artifacts-for-sonar/
-
-      - name: Verify downloaded SARIF files
-        run: pwd; ls -R codeql-artifacts-for-sonar/
-
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995 # v8.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.organization=johnnylu-jpl-testenv
+            -Dsonar.projectKey=johnnylu-jpl_scrub
