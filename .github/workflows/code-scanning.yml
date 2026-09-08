@@ -25,6 +25,8 @@ jobs:
         uses: github/codeql-action/init@v3 # v3
       - name: CodeQL Scan
         uses: github/codeql-action/init@v3 # v3
+        with:
+          output: ../results
       # This step is required to remove malformed data from the CodeQL output
       # It may be possible to remove in future iterations
       - name: Post-Process Output
