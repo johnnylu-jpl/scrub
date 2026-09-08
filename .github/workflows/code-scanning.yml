@@ -34,7 +34,7 @@ jobs:
           # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
       - name: CodeQL Scan
-        uses: github/codeql-action/init@v3 # v3
+        uses: github/codeql-action/analyze@v3 # v3
 
       # This step is required to remove malformed data from the CodeQL output
       # It may be possible to remove in future iterations
