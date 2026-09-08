@@ -1,0 +1,60 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@78ed0c7291d93e40c51b085850dc669a4c3ab73b # v3
+      - name: CodeQL Scan
+        uses: github/codeql-action/analyze@78ed0c7291d93e40c51b085850dc669a4c3ab73b # v3
+      # This step is required to remove malformed data from the CodeQL output
+      # It may be possible to remove in future iterations
+      - name: Post-Process Output
+        run: |
+          python3 -m pip install nasa-scrub
+
+          results_dir=`realpath ${{ github.workspace }}/../results`
+          sarif_files=`find $results_dir -name '*.sarif'`
+
+          for sarif_file in $sarif_files
+          do
+            output_file="$results_dir/$(basename $sarif_file .sarif)_stripped.sarif"
+
+            python3 -m scrub.tools.parsers.translate_results $sarif_file $output_file ${{ github.workspace }} sarifv2.1.0
+          done
+
+          echo "RESULTS_DIR=$results_dir" >> $GITHUB_ENV
+
+      # This step makes the analysis artifacts available for download
+      # This can be helpful for debugging and archive purposes
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: codeql-artifacts
+          path: ${{ env.RESULTS_DIR }}
+
+      - name: collect stripped .sarif file paths
+        shell: bash
+        run: |
+          sarif_paths="$(find "${{ github.workspace }}/../results" -name '*_stripped.sarif' -type f | paste -sd, -)"
+          echo "sarif paths: $sarif_paths"
+          test -n "$sarif_paths"
+          echo "SARIF_REPORT_PATHS=$sarif_paths" >> "$GITHUB_ENV"
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995 # v8.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.sarifReportPaths=${{ env.SARIF_REPORT_PATHS }}
